@@ -1,7 +1,8 @@
 # For the GUI 
-from Tkinter import *
-import tkFileDialog 
-import tkMessageBox
+from tkinter import *
+# import tkFileDialog
+# import tkMessageBox
+from tkinter import filedialog, messagebox
 
 from ofxparse import OfxParser
 
@@ -11,79 +12,78 @@ import time
 
 import re
 
-from pprint import pprint
+# from pprint import pprint
 
-Myname = "banktool "
-Myversion = "Version 0.1 "
-Myauthor = "Andrew Robinson "
+my_name = "py-bank-manager "
+my_version = "Version 0.1 "
+my_author = "Andrew Robinson "
 
 full_list = []
-cats_dict ={}
+cats_dict = {}
 
-def ApplyCats():
 
+def apply_cats():
     global full_list
     global cats_dict
-    
+
     for entry in full_list:
         if not entry["Description"] in cats_dict:
             cats_dict[entry["Description"]] = ""
-            
-        entry["Category"]=cats_dict[entry["Description"]]
-        
 
-def ReadOFX():
+        entry["Category"] = cats_dict[entry["Description"]]
 
+    print('woof!!')
+
+
+def read_ofx():
     global full_list
     global cats_dict
-    
-    names = tkFileDialog.askopenfilenames()
+
+    names = filedialog.askopenfilenames()
 
     for name in names:
-        print name
-        
-        ofxfile=open(name, 'r')
-        ofx = OfxParser.parse(ofxfile)
+        print(name)
+
+        ofx_file = open(name, 'r')
+        ofx = OfxParser.parse(ofx_file)
 
         accounts = ofx.accounts
 
         for a in accounts:
-            print a.account_id, a.institution, a.account_type
-            
+            print(a.account_id, a.institution, a.account_type)
+
             transactions = a.statement.transactions
 
             for t in transactions:
-
-##                print t.__dict__
-                
-                entry={"Account": a.number}
-#                entry["Date"]=time.strptime(t.date,'%Y-%m-%d %H:%M:%S')
-                entry["Date"]=t.date
-                entry["Amount"]=t.amount
-                k=t.memo+" "+t.payee
-                k = re.sub("\s\s+", " ", k)
-                entry["Description"]=k
+                entry = {"Account": a.number, "Date": t.date, "Amount": t.amount}
+                k = t.memo + " " + t.payee
+                # replace multiple spaces with single
+                k = re.sub(r'\s\s+', " ", k)
+                entry["Description"] = k
 
                 if not entry["Description"] in cats_dict:
                     cats_dict[entry["Description"]] = ""
-                    
-                entry["Category"]=cats_dict[entry["Description"]]
+
+                entry["Category"] = cats_dict[entry["Description"]]
 
                 full_list.append(entry)
 
-        ofxfile.close()
+        ofx_file.close()
 
-    full_list=sorted(full_list,key=lambda k: k["Date"], reverse=False)
+    full_list = sorted(full_list, key=lambda dum: dum["Date"])
 
 
-def NewFile():
+def new_file():
+    global full_list
+
     full_list = []
-    print "New File!"
+    print("New File!")
 
-def ReadCats():
+
+def read_cats():
     global cats_dict
-    
-    name = tkFileDialog.askopenfilename()
+
+    name = filedialog.askopenfilename()
     foo = open(name, 'r')
     reader = csv.reader(foo)
     cats_dict = {}
@@ -95,14 +95,16 @@ def ReadCats():
     print("meeowwww")
 
 
-def WriteFile():
+def write_file():
     global full_list
 
     with open('eggs.csv', 'wb') as csvfile:
         spamwriter = csv.writer(csvfile)
 
         for entry in full_list:
-            spamwriter.writerow([entry["Account"], time.strftime('%d-%b-%Y', entry["Date"].timetuple()), entry["Amount"], entry["Description"], entry["Category"] ])
+            spamwriter.writerow(
+                [entry["Account"], time.strftime('%d-%b-%Y', entry["Date"].timetuple()), entry["Amount"],
+                 entry["Description"], entry["Category"]])
 
     csvfile.close()
 
@@ -110,32 +112,37 @@ def WriteFile():
         spamwriter = csv.writer(csvfile)
 
         for k, v in cats_dict.items():
-            spamwriter.writerow([k , v ])
+            spamwriter.writerow([k, v])
 
     csvfile.close()
-   
-    print "Exported!"
-    
-            
-def About():
-    tkMessageBox.showinfo("About", Myname + "\n" + Myversion + "\n" + Myauthor)
-    
+
+    print("Exported!")
+
+
+def about():
+    messagebox.showinfo("About", my_name + "\n" + my_version + "\n" + my_author)
+
+
 root = Tk()
-root.title('banktool - bank statement processor')
+root.title('py-bank-manager - bank statement processor')
 root.iconbitmap(default='flag.ico')
 
-t1=Text(root)
-s = Scrollbar(root)
+t1 = Text(root)
+sb = Scrollbar(root)
 t1.pack(side=LEFT, fill=Y)
-s.pack(side=RIGHT, fill=Y)
-s.config(command=t1.yview)
-t1.config(yscrollcommand=s.set)
+sb.pack(side=RIGHT, fill=Y)
+sb.config(command=t1.yview)
+t1.config(yscrollcommand=sb.set)
 
-#Redirect print to the root widow text box
-class PrintToT1(object): 
-     def write(self, s): 
-         t1.insert(END, s)
-         t1.see(END)
+
+# Redirect print to the root widow text box
+class PrintToT1(object):
+    @staticmethod
+    def write(s):
+        t1.insert(END, s)
+        t1.see(END)
+
+
 sys.stdout = PrintToT1()
 sys.stderr = PrintToT1()
 
@@ -143,19 +150,19 @@ menu = Menu(root)
 root.config(menu=menu)
 filemenu = Menu(menu, tearoff=0)
 menu.add_cascade(label="File", menu=filemenu)
-filemenu.add_command(label="New", command=NewFile)
+filemenu.add_command(label="New", command=new_file)
 filemenu.add_separator()
-filemenu.add_command(label="Import OFX...", command=ReadOFX)
+filemenu.add_command(label="Import OFX...", command=read_ofx)
 filemenu.add_separator()
-filemenu.add_command(label="Export ...", command=WriteFile)
+filemenu.add_command(label="Export ...", command=write_file)
 filemenu.add_separator()
-filemenu.add_command(label="Read Cats ...", command=ReadCats)
-filemenu.add_command(label="Apply Cats ...", command=ApplyCats)
+filemenu.add_command(label="Read Cats ...", command=read_cats)
+filemenu.add_command(label="Apply Cats ...", command=apply_cats)
 filemenu.add_separator()
 filemenu.add_command(label="Exit", command=root.quit)
 
 helpmenu = Menu(menu, tearoff=0)
 menu.add_cascade(label="Help", menu=helpmenu)
-helpmenu.add_command(label="About...", command=About)
+helpmenu.add_command(label="About...", command=about)
 
 mainloop()
