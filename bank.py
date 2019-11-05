@@ -22,9 +22,28 @@ full_list = []
 cats_dict = {}
 
 
+def new_file():
+    global full_list
+
+    full_list = []
+    print("New File!")
+
+
+def read_cats():
+    global cats_dict
+
+    name = filedialog.askopenfilename()
+    with open(name, 'r') as foo:
+        reader = csv.reader(foo)
+        cats_dict = {}
+        for k, v in reader:
+            cats_dict[k] = v
+
+    print("meeowwww")
+
+
 def apply_cats():
     global full_list
-    global cats_dict
 
     for entry in full_list:
         if not entry["Description"] in cats_dict:
@@ -37,78 +56,53 @@ def apply_cats():
 
 def read_ofx():
     global full_list
-    global cats_dict
 
     names = filedialog.askopenfilenames()
 
     for name in names:
         print(name)
 
-        ofx_file = open(name, 'r')
-        ofx = OfxParser.parse(ofx_file)
+        with open(name, 'r') as ofx_file:
+            ofx = OfxParser.parse(ofx_file)
 
-        accounts = ofx.accounts
+            accounts = ofx.accounts
 
-        for a in accounts:
-            print(a.account_id, a.institution, a.account_type)
+            for a in accounts:
+                print(a.account_id, a.institution, a.account_type)
 
-            transactions = a.statement.transactions
+                transactions = a.statement.transactions
 
-            for t in transactions:
-                entry = {"Account": a.number, "Date": t.date, "Amount": t.amount}
-                k = t.memo + " " + t.payee
-                # replace multiple spaces with single
-                k = re.sub(r'\s\s+', " ", k)
-                entry["Description"] = k
+                for t in transactions:
+                    entry = {"Account": a.number, "Date": t.date, "Amount": t.amount}
+                    k = t.memo + " " + t.payee
+                    # replace multiple spaces with single
+                    k = re.sub(r'\s\s+', " ", k)
+                    entry["Description"] = k
 
-                if not entry["Description"] in cats_dict:
-                    cats_dict[entry["Description"]] = ""
+                    if not entry["Description"] in cats_dict:
+                        cats_dict[entry["Description"]] = ""
 
-                entry["Category"] = cats_dict[entry["Description"]]
+                    entry["Category"] = cats_dict[entry["Description"]]
 
-                full_list.append(entry)
+                    full_list.append(entry)
 
-        ofx_file.close()
-
+    # sort the list in ascending date order
     full_list = sorted(full_list, key=lambda dum: dum["Date"])
 
 
-def new_file():
-    global full_list
-
-    full_list = []
-    print("New File!")
-
-
-def read_cats():
-    global cats_dict
-
-    name = filedialog.askopenfilename()
-    foo = open(name, 'r')
-    reader = csv.reader(foo)
-    cats_dict = {}
-    for k, v in reader:
-        cats_dict[k] = v
-
-    foo.close()
-
-    print("meeowwww")
-
-
 def write_file():
-    global full_list
 
-    with open('eggs.csv', 'wb') as csvfile:
+    with open('eggs.csv', 'w', newline='') as csvfile:
         spamwriter = csv.writer(csvfile)
 
         for entry in full_list:
-            spamwriter.writerow(
-                [entry["Account"], time.strftime('%d-%b-%Y', entry["Date"].timetuple()), entry["Amount"],
-                 entry["Description"], entry["Category"]])
+            print(entry)
+            spamwriter.writerow([entry["Account"], time.strftime('%d-%b-%Y', entry["Date"].timetuple()),
+                                 entry["Amount"], entry["Description"], entry["Category"]])
 
     csvfile.close()
 
-    with open('cats.csv', 'wb') as csvfile:
+    with open('cats.csv', 'w', newline='') as csvfile:
         spamwriter = csv.writer(csvfile)
 
         for k, v in cats_dict.items():
