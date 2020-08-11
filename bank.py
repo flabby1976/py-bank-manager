@@ -39,19 +39,19 @@ def read_cats():
         for k, v in reader:
             cats_dict[k] = v
 
-    print("meeowwww")
+    print("meeowwww!!")
 
 
 def apply_cats():
     global full_list
 
     for entry in full_list:
-        if not entry["Description"] in cats_dict:
+        if entry["Description"] not in cats_dict:
             cats_dict[entry["Description"]] = ""
 
         entry["Category"] = cats_dict[entry["Description"]]
 
-    print('woof!!')
+    print('woooooof!!')
 
 
 def read_ofx():
@@ -79,7 +79,7 @@ def read_ofx():
                     k = re.sub(r'\s\s+', " ", k)
                     entry["Description"] = k
 
-                    if not entry["Description"] in cats_dict:
+                    if entry["Description"] not in cats_dict:
                         cats_dict[entry["Description"]] = ""
 
                     entry["Category"] = cats_dict[entry["Description"]]
