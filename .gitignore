@@ -105,3 +105,5 @@ venv.bak/
 .mypy_cache/
 
 /Testing Data Files
+cats.csv
+eggs.csv
