@@ -1,5 +1,5 @@
 # For the GUI 
-from tkinter import *
+from tkinter import * # pylint: disable=unused-wildcard-import
 # import tkFileDialog
 # import tkMessageBox
 from tkinter import filedialog, messagebox
